@@ -1,0 +1,13 @@
+$vi Makefile
+
+	(change 'TARGET' variable to target program's name)
+
+$make
+
+	(turn on second terminal)
+
+<1st terminal>$./target
+
+<2nd termianl>$LD_PRELOAD=./ddmon.so ./target
+
+	(result on 1st terminal when deadlock occur)
