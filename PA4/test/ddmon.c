@@ -29,9 +29,8 @@ void * pthread_mutex_lock (pthread_mutex_t *m)
 	pthread_mutex_lock_cp = dlsym(RTLD_NEXT, "pthread_mutex_lock") ;
 
 	char buf[MAXBUF];
-	int tmp = m;
 	pid_t tid = syscall(SYS_gettid);
-	sprintf(buf, "Lock %d from %d\n", tmp, tid);
+	sprintf(buf, "Lock %p from %d\n", m, tid);
 	int fd = open(FIFO, O_WRONLY | O_SYNC) ;
     write(fd, buf, MAXBUF);
 
@@ -44,9 +43,8 @@ void * pthread_mutex_unlock (pthread_mutex_t *m)
 	pthread_mutex_unlock_cp = dlsym(RTLD_NEXT, "pthread_mutex_unlock") ;
 
 	char buf[MAXBUF];
-	int tmp = m;
 	pid_t tid = syscall(SYS_gettid);
-	sprintf(buf, "Unlock %d from %d\n", tmp, tid);
+	sprintf(buf, "Unlock %p from %d\n", m, tid);
 	int fd = open(FIFO, O_WRONLY | O_SYNC) ;
     write(fd, buf, MAXBUF);
 

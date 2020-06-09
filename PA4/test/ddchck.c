@@ -22,12 +22,13 @@
 //program functions
 void print_intro();
 int open_fifo();
-int createIndex(int val, int* list, int* num);
+int createIndexM(char val[MAXBUF], char list[LISTSIZE][MAXBUF]);
+int createIndexT(int val, int* list);
 void add_lock(int _index_m, int _index_t);
 void rm_lock(int _index_m, int _index_t);
 bool hasCycle();
 bool isCycle(int num_curr, int _isvisit[LISTSIZE]);
-void print_deadlock(int _index_m, int _m, int _index_t, int _t);
+void print_deadlock(int _index_m, char m[MAXBUF], int _index_t, int _t);
 //universal functions
 int isIn_intArray(int num, int* arr, int size);
 bool isEmpty_intArray(int* arr, int size);
@@ -38,7 +39,7 @@ void print_intArray(int* arr, int size);
 void test();
 
 int num_m = 0; 
-int list_m[LISTSIZE];
+char list_m[LISTSIZE][MAXBUF];
 int num_t = 0; 
 int list_t[LISTSIZE];
 int graph[LISTSIZE][LISTSIZE] = {0, };	// cols: node A, rows: node B
@@ -52,13 +53,14 @@ int main ()
 	{
 		char buf[MAXBUF];
 		char tmp[MAXBUF];
-		int len, m, t, index_m, index_t;
+		char m[MAXBUF];
+		int len, t, index_m, index_t;
 		if ((len = read(fd, buf, MAXBUF)) == -1)
 			break ;
 		if (len > 0){
-			sscanf(buf, "%s %d %*s %d", tmp, &m, &t);	
-			index_m = createIndex(m, list_m, &num_m);
-			index_t = createIndex(t, list_t, &num_t);
+			sscanf(buf, "%s %s %*s %d", tmp, m, &t);	
+			index_m = createIndexM(m, list_m);
+			index_t = createIndexT(t, list_t);
 			if(!strcmp("Lock", tmp))
 			{
 				add_lock(index_m, index_t);
@@ -103,14 +105,30 @@ int open_fifo()
 	return tmp;
 }
 
-int createIndex(int val, int* list, int* num)
+int createIndexM(char val[MAXBUF], char list[LISTSIZE][MAXBUF])
 {
 	int index =0;
-	if((index=isIn_intArray(val, list, *num))==-1)
+	for(int i =0; i<LISTSIZE; i++)
 	{
-		list[*num] = val;
-		(*num)++;
-		index = *num;
+		if(!strcmp(val, list[i]))
+		{
+			return i+1;
+		}
+	}
+	strcpy(list[num_m], val);
+	num_m++;
+	index = num_m;
+	return index;
+}
+
+int createIndexT(int val, int* list)
+{
+	int index =0;
+	if((index=isIn_intArray(val, list, num_t))==-1)
+	{
+		list[num_t] = val;
+		(num_t)++;
+		index = num_t;
 	}
 	return index;
 }
@@ -190,11 +208,11 @@ bool isCycle(int num_curr, int _isvisit[LISTSIZE])
 	return result;
 }
 
-void print_deadlock(int _index_m, int _m, int _index_t, int _t)
+void print_deadlock(int _index_m, char _m[MAXBUF], int _index_t, int _t)
 {
 	printf("\n\n   !!--------------------------------------!!\n\n");
 	printf("    Deadlock occur! \n\n");
-	printf("      - Cycle is made after Thread %d (tid: %d) lock Mutex %d (address: %d)\n\n", _index_t, _t, _index_m, _m);
+	printf("      - Cycle is made after Thread %d (tid: %d) lock Mutex %d (address: %s)\n\n", _index_t, _t, _index_m, _m);
 	printf("      - All involved threads and mutexs are below (currently locked) \n\n");
 	for(int i =0; i<LISTSIZE; i++)
 	{
@@ -204,7 +222,7 @@ void print_deadlock(int _index_m, int _m, int _index_t, int _t)
 		{
 			if(locked[i][j]==true)
 			{
-				printf("          - mutex %d (address: %d)\n", j+1, list_m[j]);
+				printf("          - mutex %d (address: %s)\n", j+1, list_m[j]);
 			}
 		}
 	}
